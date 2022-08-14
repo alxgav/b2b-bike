@@ -1,0 +1,18 @@
+fetch("http://b2b.bianchi.com/ACX/rest_api/orders/202250022694/add-products/products?countElement=1&pageSize=120&viewType=CUSTOMER&pageDirection=FORWARD&componentId=ORDV.orderProductSearch.grid&pageId=ORDV.orderProductSearch&imgSource=selling_order_grid&imgWidth=260&imgHeight=290&addFilter=%7B%22boxFlag%22:true,%22kitFlag%22:true,%22bulkFlag%22:true%7D", {
+    "headers": {
+      "accept": "application/json, text/plain, */*",
+      "accept-language": "en-US,en;q=0.9",
+      "cache-control": "no-cache",
+      "content-type": "application/json; charset=utf-8",
+      "expires": "Sat, 01 Jan 2000 00:00:00 GMT",
+      "if-modified-since": "0",
+      "pragma": "no-cache",
+      "x-far-authentication": "{\"sessionID\":\"73F7161ED796534B087ADB09754D33E4\",\"host\":\"10.98.0.52\",\"contextPath\":\"ACX\"}"
+    },
+    "referrer": "http://b2b.bianchi.com/ACX/fweba2/page/order-product-search?orderNumber=202250022694&viewType=CUSTOMER",
+    "referrerPolicy": "strict-origin-when-cross-origin",
+    "body": null,
+    "method": "GET",
+    "mode": "cors",
+    "credentials": "include"
+  });
