@@ -16,4 +16,5 @@ USER_MAIL = os.getenv('USER_MAIL')
 USER_MAIL_PASSWORD = os.getenv('USER_MAIL_PASSWORD')
 MAIL_SERVER = os.getenv('MAIL_SERVER')
 MAIL_PORT = os.getenv('MAIL_PORT')
+MAIL_TO = os.getenv('MAIL_TO')
 

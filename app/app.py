@@ -216,15 +216,12 @@ def get_data_details(data: list) -> list:
                                     'SIZE' : sku_data["size"],
                                     'AVAILABLE' : sku_data["availableQuantity"]
                                 })
-                        return sku    
-                            
-                        
-        break
+                        return sku  
+    return None  
 
 '''write data to csv'''
 def csv_bike(data: list, filename: str):
     df_bikes = pd.DataFrame(data)
-    
     df_bikes.to_csv(f'{config.path}/out/{filename}', sep=';', index=False)
 
 
@@ -239,8 +236,7 @@ def main():
     csv_bike(data, 'bike.csv')
     csv_bike(get_data_details(data), 'bike_details.csv')
     logger.info(f'length of data {len(data)}')
-   
-    mailto.send_email('TEST', config.USER_MAIL, ['alxgav@yandex.ru'], content)
+    mailto.send_email('B2B parsing', config.USER_MAIL, [config.MAIL_TO], 'any content')
     browser.close()
     browser.quit()
     
