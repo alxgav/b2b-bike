@@ -7,7 +7,7 @@ from datetime import datetime
 
 from browser import browser
 from loguru import logger
-
+from modules import mailto
 
 import config
 import os
@@ -15,6 +15,8 @@ import glob
 import re
 import math
 import json
+import pandas as pd
+
 
 
 
@@ -184,7 +186,7 @@ def data_bike(url_page: str) -> dict:
     return None
 
 
-def get_data_details(data: list): 
+def get_data_details(data: list) -> list: 
     for code in data:
         code = code['CODE']
         search_input = browser.find_element(By.XPATH, value='/html/body/bianchi-customer/acx-base/div/div/div/div[2]/div[2]/om-content/div/div[2]/page-loader/div/sdk-frame-section/sdk-frame-section[1]/sdk-frame-section[2]/div/ordv-order-product-search-grid/div/div[1]/div[4]/div[1]/mz-input-container/div/input')
@@ -200,9 +202,30 @@ def get_data_details(data: list):
                 if request.response.headers['Content-Type'] == 'application/json':
                     if f'/add-products/{code}/grid' in request.url:
                         data = json.loads(request.response.body)
+                        sku = []
+                        for item in data['data']['grid']:
+                            for sku_data in item["skuList"]:
+                                
+                                sku.append({
+                                    'CODE' : item["productCode"],
+                                    'PRODUCT' : item["productDescription"],
+                                    'COLOR' : item["code1Description"],
+                                    'DELIVER' : item["availabilityLabelText"],
+                                    'SKU' : sku_data["sku"],
+                                    'PRICE' : sku_data["newWholesalePrice"],
+                                    'SIZE' : sku_data["size"],
+                                    'AVAILABLE' : sku_data["availableQuantity"]
+                                })
+                        return sku    
+                            
                         
         break
 
+'''write data to csv'''
+def csv_bike(data: list, filename: str):
+    df_bikes = pd.DataFrame(data)
+    
+    df_bikes.to_csv(f'{config.path}/out/{filename}', sep=';', index=False)
 
 
 @logger.catch
@@ -211,10 +234,13 @@ def main():
     session_id = get_session()
     url_page = f'{config.PAGE}ACX/fweba2/page/order-list?httpSessionId={session_id}&host=10.98.0.52&context_path=ACX'
     logger.info(session_id)
-    # download(url_page)
+    # download(url_page) # if need
     data = data_bike(url_page)
-    get_data_details(data)
+    csv_bike(data, 'bike.csv')
+    csv_bike(get_data_details(data), 'bike_details.csv')
     logger.info(f'length of data {len(data)}')
+   
+    mailto.send_email('TEST', config.USER_MAIL, ['alxgav@yandex.ru'], content)
     browser.close()
     browser.quit()
     
