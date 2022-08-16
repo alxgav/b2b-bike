@@ -225,6 +225,34 @@ def csv_bike(data: list, filename: str):
     df_bikes.to_csv(f'{config.path}/out/{filename}', sep=';', index=False)
 
 
+''' html table'''
+def table_html(data: list) -> str:
+    if (data):
+        table = pd.DataFrame(data)
+        html = table.to_html(index=False, classes='table-dark table-striped').replace('dataframe','table') #.replace('\n', '').replace('NaN', '')
+        template = f'''
+                        <!doctype html>
+                <html lang="en">
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" >
+                    <title>Bootstrap demo</title>
+                </head>
+                <body>
+                    <h1>New bike(s) is now available in B2B</h1>
+                    <div>{html}</div>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" ></script>
+  </body>
+                </body>
+                </html>
+        '''
+        print(html)
+        return template
+    return None
+
+
+
 @logger.catch
 def main():
     login(config.USER_NAME, config.USER_PASSWORD)
@@ -233,10 +261,11 @@ def main():
     logger.info(session_id)
     # download(url_page) # if need
     data = data_bike(url_page)
+    details_data = get_data_details(data)
     csv_bike(data, 'bike.csv')
-    csv_bike(get_data_details(data), 'bike_details.csv')
+    csv_bike(details_data, 'bike_details.csv')
     logger.info(f'length of data {len(data)}')
-    mailto.send_email('B2B parsing', config.USER_MAIL, [config.MAIL_TO], 'any content')
+    mailto.send_email('B2B parsing', config.USER_MAIL, [config.MAIL_TO], table_html(details_data))
     browser.close()
     browser.quit()
     
