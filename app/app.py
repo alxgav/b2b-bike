@@ -47,8 +47,10 @@ browser.maximize_window()
 
 def find_data(data: list) -> bool:
     for i in [i.replace('\n', '').replace('"', '').replace(',', '') for i in open (f'{config.path}/{config.IDS}', 'r').readlines()]:
+        
         if i[0:len(i)] in data:
             return True
+    return False
 
 
 '''Login this page'''
@@ -187,6 +189,7 @@ def data_bike(url_page: str) -> dict:
 
 
 def get_data_details(data: list) -> list: 
+    sku = []
     for code in data:
         code = code['CODE']
         search_input = browser.find_element(By.XPATH, value='/html/body/bianchi-customer/acx-base/div/div/div/div[2]/div[2]/om-content/div/div[2]/page-loader/div/sdk-frame-section/sdk-frame-section[1]/sdk-frame-section[2]/div/ordv-order-product-search-grid/div/div[1]/div[4]/div[1]/mz-input-container/div/input')
@@ -202,22 +205,26 @@ def get_data_details(data: list) -> list:
                 if request.response.headers['Content-Type'] == 'application/json':
                     if f'/add-products/{code}/grid' in request.url:
                         data = json.loads(request.response.body)
-                        sku = []
+                        
                         for item in data['data']['grid']:
                             for sku_data in item["skuList"]:
-                                
-                                sku.append({
-                                    'CODE' : item["productCode"],
-                                    'PRODUCT' : item["productDescription"],
-                                    'COLOR' : item["code1Description"],
-                                    'DELIVER' : item["availabilityLabelText"],
-                                    'SKU' : sku_data["sku"],
-                                    'PRICE' : sku_data["newWholesalePrice"],
-                                    'SIZE' : sku_data["size"],
-                                    'AVAILABLE' : sku_data["availableQuantity"]
-                                })
-                        return sku  
-    return None  
+                                if int(sku_data["availableQuantity"]) > 0:
+
+                                    sku.append({
+                                        'CODE' : item["productCode"],
+                                        'PRODUCT' : item["productDescription"],
+                                        'COLOR' : item["code1Description"],
+                                        'DELIVER' : item["availabilityLabelText"],
+                                        'SKU' : sku_data["sku"],
+                                        'PRICE' : sku_data["newWholesalePrice"],
+                                        'SIZE' : sku_data["size"],
+                                        'AVAILABLE' : sku_data["availableQuantity"]
+                                    })
+        browser.find_element(By.XPATH, value=f'/html/body/sdk-modal-panel/mz-modal/div/div[1]/div/mz-modal-content/order-product-grid-modal/div/div[1]/div[1]/div[2]/sdk-button/button/i').click()
+        sleep(3)
+        browser.find_element(By.XPATH, value=f'//*[@id="{code}"]/sdk-collection-item-ld/div/div[1]/div/div/div[1]/i').click()    
+        sleep(3) 
+    return sku  
 
 '''write data to csv'''
 def csv_bike(data: list, filename: str):
@@ -229,25 +236,23 @@ def csv_bike(data: list, filename: str):
 def table_html(data: list) -> str:
     if (data):
         table = pd.DataFrame(data)
+        table.loc[table.duplicated(subset=['CODE','PRODUCT']),['CODE','PRODUCT']]=''
+        # table.set_index(['CODE','PRODUCT', 'PRICE'])
         html = table.to_html(index=False, classes='table-dark table-striped').replace('dataframe','table') #.replace('\n', '').replace('NaN', '')
+        # html = table.to_html(index=False)
         template = f'''
                         <!doctype html>
                 <html lang="en">
                 <head>
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1">
-                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" >
-                    <title>Bootstrap demo</title>
                 </head>
                 <body>
                     <h1>New bike(s) is now available in B2B</h1>
                     <div>{html}</div>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" ></script>
-  </body>
                 </body>
                 </html>
         '''
-        print(html)
         return template
     return None
 
