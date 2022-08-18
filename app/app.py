@@ -45,10 +45,9 @@ browser.get(f'{config.PAGE}ACX/')
 browser.maximize_window()
 
 
-def find_data(data: list) -> bool:
+def find_data(code: str) -> bool:
     for i in [i.replace('\n', '').replace('"', '').replace(',', '') for i in open (f'{config.path}/{config.IDS}', 'r').readlines()]:
-        
-        if i[0:len(i)] in data:
+        if i[0:len(i)] in code:
             return True
     return False
 
@@ -63,7 +62,7 @@ def login(user, password) -> None:
     passw.send_keys(password)
     passw.send_keys(Keys.ENTER)
     # sleep(5)
-    logger.info('Logged')
+    logger.info('authorization complited')
 
 '''get cookie '''
 def get_session() -> str:
@@ -179,6 +178,7 @@ def data_bike(url_page: str) -> dict:
                     for item in data['data']['result']:
                         id = item['productCode']
                         if find_data(id):
+                            logger.info(f'{id} productCode')
                             data_bike.append({'CODE': id,
                                     'PRODUCT':item["productDescription"],
                                     'PRICE':item["price"]
@@ -266,7 +266,9 @@ def main():
     logger.info(session_id)
     # download(url_page) # if need
     data = data_bike(url_page)
+    logger.info(f'Length data bike {len(data)}')
     details_data = get_data_details(data)
+    logger.info(f'Length data bike {len(details_data)}')
     csv_bike(data, 'bike.csv')
     csv_bike(details_data, 'bike_details.csv')
     logger.info(f'length of data {len(data)}')
