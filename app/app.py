@@ -257,6 +257,19 @@ def table_html(data: list) -> str:
     return None
 
 
+''' create excel file'''
+def write_to_excel(df, filename):
+    writer = pd.ExcelWriter(filename) 
+    df.to_excel(writer, sheet_name='b1', index=False, na_rep='NaN')
+
+    # Auto-adjust columns' width
+    for column in df:
+        column_width = max(df[column].astype(str).map(len).max(), len(column))
+        col_idx = df.columns.get_loc(column)
+        writer.sheets['b1'].set_column(col_idx, col_idx, column_width)
+
+    writer.save()
+
 
 @logger.catch
 def main():
@@ -272,6 +285,7 @@ def main():
     csv_bike(data, 'bike.csv')
     csv_bike(details_data, 'bike_details.csv')
     logger.info(f'length of data {len(data)}')
+    write_to_excel(pd.DataFrame(details_data), f'{config.path}/out/b2b.xlsx')
     mailto.send_email('B2B parsing', config.USER_MAIL, [config.MAIL_TO], table_html(details_data))
     browser.close()
     browser.quit()
